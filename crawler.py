@@ -22,7 +22,9 @@ STOP_WORDS = frozenset(
     "above below between up down out off over under again further then once also "
     "more most very just than too so such only own same here there these those "
     "home page site web contact us help search skip navigation menu main content "
-    "new go get one two use".split()
+    "new go get one two use you your form connect submit click follow share "
+    "read learn find see make like need know want let next last first back "
+    "free join today now open close start end top left right".split()
 )
 
 USER_AGENT = "EduSpider/1.0 (educational crawler; +https://github.com/eduspider)"
@@ -149,13 +151,15 @@ def parse_page(html, base_url):
     return title, description, headings, links
 
 
-def crawl(url, max_depth, crawl_id, depth=0, visited=None):
+def crawl(url, max_depth, crawl_id, max_pages=200, depth=0, visited=None, pages_count=None):
+    if pages_count is None:
+        pages_count = [0]  # mutable counter shared across recursion
     if visited is None:
         visited = set()
 
     url = normalize_url(url)
 
-    if url in visited or depth > max_depth:
+    if url in visited or depth > max_depth or pages_count[0] >= max_pages:
         return 0
 
     visited.add(url)
@@ -189,14 +193,17 @@ def crawl(url, max_depth, crawl_id, depth=0, visited=None):
         return 0  # Already saved by another path
 
     pages_found = 1
+    pages_count[0] += 1
 
     topics = extract_topics(title, headings)
     for topic_name in topics:
         topic_id = db.get_or_create_topic(topic_name)
         db.link_page_topic(page_id, topic_id)
 
-    if depth < max_depth:
+    if depth < max_depth and pages_count[0] < max_pages:
         for link in links:
+            if pages_count[0] >= max_pages:
+                break
             link = normalize_url(link)
             if link in visited:
                 continue
@@ -204,7 +211,7 @@ def crawl(url, max_depth, crawl_id, depth=0, visited=None):
                 continue
             if not is_allowed_domain(link):
                 continue
-            pages_found += crawl(link, max_depth, crawl_id, depth + 1, visited)
+            pages_found += crawl(link, max_depth, crawl_id, max_pages, depth + 1, visited, pages_count)
 
     return pages_found
 
@@ -213,6 +220,7 @@ def main():
     parser = argparse.ArgumentParser(description="EduSpider - crawl .edu/.org/.gov sites")
     parser.add_argument("url", help="Seed URL to start crawling from")
     parser.add_argument("--depth", type=int, default=10, help="Maximum crawl depth (default: 10)")
+    parser.add_argument("--max-pages", type=int, default=200, help="Maximum pages to crawl (default: 200)")
     args = parser.parse_args()
 
     seed_url = args.url
@@ -225,11 +233,11 @@ def main():
 
     db.init_db()
 
-    print(f"Starting crawl: {seed_url} (max depth: {args.depth})")
+    print(f"Starting crawl: {seed_url} (max depth: {args.depth}, max pages: {args.max_pages})")
     crawl_id = db.create_crawl(seed_url, args.depth)
 
     try:
-        pages_found = crawl(seed_url, args.depth, crawl_id)
+        pages_found = crawl(seed_url, args.depth, crawl_id, args.max_pages)
         db.finish_crawl(crawl_id, pages_found, "done")
         print(f"\nCrawl complete. Pages found: {pages_found}")
     except KeyboardInterrupt:
