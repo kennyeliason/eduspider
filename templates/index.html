@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduSpider - Topics</title>
+    <style>
+        body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.6; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        nav { margin-bottom: 30px; font-size: 0.9em; }
+        nav a { margin-right: 15px; color: #555; }
+        .topic-list { list-style: none; padding: 0; }
+        .topic-list li { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .topic-list a { text-decoration: none; color: #1a5276; font-size: 1.1em; }
+        .topic-list a:hover { text-decoration: underline; }
+        .count { color: #888; font-size: 0.85em; margin-left: 8px; }
+        .empty { color: #888; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>EduSpider</h1>
+    <nav>
+        <a href="/">Topics</a>
+        <a href="/crawls">Crawl History</a>
+    </nav>
+    {% if topics %}
+    <ul class="topic-list">
+        {% for t in topics %}
+        <li>
+            <a href="/topic/{{ t.name }}">{{ t.name }}</a>
+            <span class="count">{{ t.page_count }} page{{ 's' if t.page_count != 1 }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">No topics yet. Run the crawler first: <code>python crawler.py &lt;url&gt; --depth 3</code></p>
+    {% endif %}
+</body>
+</html>

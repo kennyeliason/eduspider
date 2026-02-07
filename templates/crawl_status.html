@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crawl History - EduSpider</title>
+    <style>
+        body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.6; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        nav { margin-bottom: 30px; font-size: 0.9em; }
+        nav a { margin-right: 15px; color: #555; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #ddd; }
+        th { font-weight: bold; border-bottom: 2px solid #333; }
+        .status-done { color: #27ae60; }
+        .status-running { color: #e67e22; }
+        .status-error { color: #c0392b; }
+        .status-interrupted { color: #888; }
+        .empty { color: #888; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Crawl History</h1>
+    <nav>
+        <a href="/">Topics</a>
+        <a href="/crawls">Crawl History</a>
+    </nav>
+    {% if crawls %}
+    <table>
+        <thead>
+            <tr>
+                <th>Seed URL</th>
+                <th>Depth</th>
+                <th>Pages</th>
+                <th>Status</th>
+                <th>Started</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in crawls %}
+            <tr>
+                <td><a href="{{ c.seed_url }}" target="_blank">{{ c.seed_url[:50] }}{% if c.seed_url|length > 50 %}...{% endif %}</a></td>
+                <td>{{ c.max_depth }}</td>
+                <td>{{ c.pages_found }}</td>
+                <td class="status-{{ c.status }}">{{ c.status }}</td>
+                <td>{{ c.started_at[:19] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No crawls yet. Run: <code>python crawler.py &lt;url&gt; --depth 3</code></p>
+    {% endif %}
+</body>
+</html>
