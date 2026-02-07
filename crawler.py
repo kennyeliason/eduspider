@@ -63,9 +63,15 @@ def check_robots(url):
 
 def normalize_url(url):
     parsed = urlparse(url)
+    # Normalize scheme to https
+    scheme = "https"
+    # Normalize domain: lowercase, strip www.
+    netloc = parsed.netloc.lower()
+    if netloc.startswith("www."):
+        netloc = netloc[4:]
     # Remove fragment, normalize trailing slash on path
     path = parsed.path.rstrip("/") or "/"
-    return urlunparse((parsed.scheme, parsed.netloc.lower(), path, parsed.params, parsed.query, ""))
+    return urlunparse((scheme, netloc, path, parsed.params, parsed.query, ""))
 
 
 def is_allowed_domain(url):
