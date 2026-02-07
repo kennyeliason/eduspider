@@ -65,10 +65,8 @@ def normalize_url(url):
     parsed = urlparse(url)
     # Normalize scheme to https
     scheme = "https"
-    # Normalize domain: lowercase, strip www.
+    # Lowercase domain (keep www - some domains only work with it)
     netloc = parsed.netloc.lower()
-    if netloc.startswith("www."):
-        netloc = netloc[4:]
     # Remove fragment, normalize trailing slash on path
     path = parsed.path.rstrip("/") or "/"
     return urlunparse((scheme, netloc, path, parsed.params, parsed.query, ""))
